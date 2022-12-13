@@ -1,52 +1,46 @@
-
-
-const template = document.querySelector('#post-template');
-const elPosts = document.querySelector('#posts');
-const h1 = document.querySelector('h1');
-const elPostSelect = document.querySelector('#post-id');
-
-
-function renderSelectId() {
-	const postIds = [];
-	const selectFragment = document.createDocumentFragment();
-	const option = document.createElement('option');
-	option.textContent = 'all';
-	option.value = 'all';
-
-	selectFragment.appendChild(option);
-	data.forEach((element) => {
-		if (!postIds.includes(element.postId)) {
-			postIds.push(element.postId);
-
-			const option = document.createElement('option');
-			option.textContent = element.postId;
-			option.value = element.postId;
-			selectFragment.appendChild(option);
-		}
-	});
-	elPostSelect.appendChild(selectFragment);
+function findElement(element, parent = document) {
+	return parent.querySelector(element);
 }
-renderSelectId();
-function renderPost(array, parent = elPosts) {
+const template = findElement('#post-template');
+const elTodos = findElement('#posts');
+const h1 = findElement('h1');
+const elTodoSelect = findElement('#post-id');
+const elLoader = findElement('.loader');
+
+let todos = JSON.parse(localStorage.getItem('todos'))
+	? JSON.parse(localStorage.getItem('todos'))
+	: [];
+
+fetch('https://jsonplaceholder.typicode.com/todos/')
+	.then((res) => res.json())
+	.then((data) => {
+		todos = data;
+		renderTodos(todos, elTodos);
+		elLoader.className = 'd-none';
+	})
+	.catch((err) => console.log(err));
+
+function renderTodos(array, parent = elTodos) {
 	parent.textContent = '';
 
 	const postFragment = document.createDocumentFragment();
-
+	localStorage.setItem('todos', JSON.stringify(todos));
 	array.forEach((element) => {
 		const postTemplate = template.content.cloneNode(true);
 		const elementId = postTemplate.querySelector('.number');
 		const elementName = postTemplate.querySelector('.name');
-		const elementEmail = postTemplate.querySelector('.email');
-		const elementBody = postTemplate.querySelector('.about');
+		const elementCheck = postTemplate.querySelector('#completed');
+
 		const elementButton = postTemplate.querySelector('button');
-		const elementPostID = postTemplate.querySelector('.postId');
 
 		elementId.textContent = element.id;
-		elementName.textContent = element.name;
-		elementEmail.textContent = element.email;
-		elementBody.textContent = element.body;
+		elementName.textContent = element.title;
+		elementName.style.textDecoration =
+			element.completed === true ? 'line-through' : 'none';
+		elementCheck.checked = element.completed;
+		elementCheck.dataset.id = element.id;
+
 		elementButton.dataset.id = element.id;
-		elementPostID.textContent = element.postId;
 
 		postFragment.appendChild(postTemplate);
 	});
@@ -54,36 +48,48 @@ function renderPost(array, parent = elPosts) {
 	parent.appendChild(postFragment);
 }
 
-renderPost(data, elPosts);
-
-elPosts.addEventListener('click', (e) => {
+elTodos.addEventListener('click', (e) => {
 	const target = e.target;
 
 	if (target.className.match('btn-danger')) {
 		const id = target.dataset.id;
-		const result = data.filter((element) => {
+		const result = todos.filter((element) => {
 			if (Number(id) !== element.id) {
-				//1 !== 1
 				return element;
 			}
 		});
-		data = result;
+		todos = result;
 
-		renderPost(data);
+		renderTodos(todos);
+	}
+
+	if (target.id === 'completed') {
+		const id = target.dataset.id;
+
+		todos.forEach((todo) => {
+			if (todo.id === Number(id)) {
+				todo.completed = !todo.completed;
+			}
+		});
+
+		renderTodos(todos);
 	}
 });
 
-elPostSelect.addEventListener('change', (e) => {
-	const postId = e.target.value;
+elTodoSelect.addEventListener('change', (e) => {
+	let value = e.target.value;
 
-	const result = data.filter((post) => {
-		if (post.postId === Number(postId)) {
-			return post;
+	const result = todos.filter((todo) => {
+		if (value === 'true') {
+			value = true;
+		} else if (value === 'false') {
+			value = false;
+		}
+
+		if (todo.completed == value) {
+			return todo;
 		}
 	});
-	if (postId === 'all') {
-		renderPost(data);
-	} else {
-		renderPost(result);
-	}
+
+	renderTodos(result);
 });

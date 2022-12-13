@@ -12,10 +12,28 @@
 		/>
 
 		<title>Document</title>
+		<style>
+			.d-none {
+				display: none !important;
+			}
+		</style>
 	</head>
 	<body>
+		<div
+			class="loader d-flex justify-content-center align-items-center"
+			style="height: 100vh; width: 100vw; position: absolute"
+		>
+			<div class="spinner-border" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+		</div>
+
 		<div class="container mt-5">
-			<select name="" class="form-control my-5" id="post-id"></select>
+			<select name="" class="my-5" id="post-id">
+				<option value=""></option>
+				<option value="true">Completed</option>
+				<option value="false">unCompleted</option>
+			</select>
 			<div class="row" id="posts"></div>
 		</div>
 
@@ -26,6 +44,7 @@
 				<h4 class="name text-center w-100"></h4>
 				<h6 class="email text-center"></h6>
 				<p class="about w-50 text-center"></p>
+				<input type="checkbox" name="" id="completed" />
 				<button type="button" class="btn btn-danger">Delete</button>
 			</div>
 		</template>
@@ -36,7 +55,7 @@
 			crossorigin="anonymous"
 		></script>
 
-		<script src="./server.js"></script>
+		<!-- <script src="./server.js"></script> -->
 		<script src="./main.js"></script>
 	</body>
 </html>
